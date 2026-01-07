@@ -9,9 +9,17 @@ export default function UserList() {
   }, []);
 
   return (
-    <div className="bg-gray-800 p-4 rounded">
-      <h3 className="font-bold">Users</h3>
-      {users.map((u, i) => <p key={i}>{u}</p>)}
+  <div className="bg-zinc-900 rounded-2xl p-4 shadow-xl border border-zinc-800">
+    <h2 className="font-semibold mb-3">Users</h2>
+    <div className="space-y-1 text-sm text-zinc-300">
+      {users.map((u, i) => (
+        <p key={i} className="flex items-center gap-2">
+          <span className="h-2 w-2 bg-green-500 rounded-full"></span>
+          {u}
+        </p>
+      ))}
     </div>
-  );
+  </div>
+);
+
 }
