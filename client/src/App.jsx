@@ -32,7 +32,7 @@ export default function App() {
         </button>
 
         <p className="text-xs text-center text-gray-500 mt-6">
-          Powered by Socket.IO & YouTube Player
+          Created by Aditya Sajwan & Mohit chamoli
         </p>
       </div>
     </div>
