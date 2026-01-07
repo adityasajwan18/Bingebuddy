@@ -78,9 +78,10 @@ export default function Player({ roomId }) {
     };
   }, []);
 
-  return (
-    <div className="bg-gray-900 p-4 rounded">
-      <div id="player" />
-    </div>
-  );
+ return (
+  <div className="bg-zinc-900 rounded-2xl p-4 shadow-xl border border-zinc-800">
+    <div id="player" className="w-full aspect-video rounded-xl overflow-hidden" />
+  </div>
+);
+
 }

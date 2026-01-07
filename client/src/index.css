@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-/* Optional custom styles */
-html {
-  scroll-behavior: smooth;
+/* Optional global styling */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
