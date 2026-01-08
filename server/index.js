@@ -1,3 +1,7 @@
+function generateRoomCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -10,26 +14,45 @@ const io = new Server(server, {
 
 const rooms = {};
 
+socket.on("join-room", ({ roomId, username }) => {
+  if (!rooms[roomId]) {
+    socket.emit("error-message", "Room does not exist");
+    return;
+  }
+
+  rooms[roomId].users[socket.id] = username;
+  socket.join(roomId);
+
+  socket.emit("room-joined", {
+    roomId,
+    isHost: false,
+    users: rooms[roomId].users
+  });
+
+  io.to(roomId).emit("user-list", rooms[roomId].users);
+});
+
 io.on("connection", (socket) => {
 
-  socket.on("join-room", ({ roomId, username }) => {
-    socket.join(roomId);
+  socket.on("create-room", ({ username }) => {
+  const roomId = generateRoomCode();
 
-    if (!rooms[roomId]) {
-      rooms[roomId] = {
-        host: socket.id,
-        users: {},
-        videoId: "",
-        time: 0,
-        playing: false
-      };
-    }
+  rooms[roomId] = {
+    host: socket.id,
+    users: { [socket.id]: username },
+    videoState: { videoId: "", time: 0, playing: false }
+  };
 
-    rooms[roomId].users[socket.id] = username;
+  socket.join(roomId);
 
-    socket.emit("room-data", rooms[roomId]);
-    io.to(roomId).emit("user-list", rooms[roomId].users);
+  socket.emit("room-created", {
+    roomId,
+    isHost: true,
+    users: rooms[roomId].users
   });
+});
+});
+
 
   socket.on("video-state", ({ roomId, videoId, time, playing }) => {
     rooms[roomId].videoId = videoId;
@@ -48,6 +71,5 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("user-list", rooms[roomId].users);
     }
   });
-});
 
 server.listen(3000, () => console.log("Server running on 3000"));
