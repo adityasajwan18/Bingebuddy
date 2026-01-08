@@ -46,12 +46,16 @@ export default function Player({ roomId }) {
     };
   }, []);
 
-  // Sync from server
+  // Sync from server, and request init when roomId changes
   useEffect(() => {
+    if (roomId) {
+      socket.emit("request-init", { roomId });
+    }
+
     socket.on("init-state", (room) => {
       if (socket.id === room.host) isHostRef.current = true;
 
-      if (room.videoState.videoId && playerRef.current) {
+      if (room.videoState && room.videoState.videoId && playerRef.current) {
         playerRef.current.loadVideoById(room.videoState.videoId);
         playerRef.current.seekTo(room.videoState.time);
 
@@ -76,7 +80,7 @@ export default function Player({ roomId }) {
       socket.off("init-state");
       socket.off("sync-video");
     };
-  }, []);
+  }, [roomId]);
 
  return (
   <div className="bg-zinc-900 rounded-2xl p-4 shadow-xl border border-zinc-800">
