@@ -1,39 +1,104 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { socket } from "./socket";
+
+// get room from URL safely
+function getRoomFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("room") || "";
+}
 
 export default function App() {
-  const [roomCode, setRoomCode] = useState("");
+  const [username, setUsername] = useState("");
+  const [roomId, setRoomId] = useState(getRoomFromURL);
+  const [joined, setJoined] = useState(false);
+  const [isHost, setIsHost] = useState(false);
 
+  // ✅ REGISTER SOCKET LISTENERS ONCE
+  useEffect(() => {
+    socket.on("room-created", ({ roomId, isHost }) => {
+      setRoomId(roomId);
+      setIsHost(isHost);
+      setJoined(true);
+      window.history.pushState({}, "", `?room=${roomId}`);
+    });
+
+    socket.on("room-joined", ({ isHost }) => {
+      setIsHost(isHost);
+      setJoined(true);
+    });
+
+    socket.on("error-message", (msg) => {
+      alert(msg);
+    });
+
+    return () => {
+      socket.off("room-created");
+      socket.off("room-joined");
+      socket.off("error-message");
+    };
+  }, []);
+
+  // ✅ BUTTON HANDLERS (EMIT ONLY)
+  const createRoom = () => {
+    if (!username) return alert("Enter username");
+    socket.emit("create-room", { username });
+  };
+
+  const joinRoom = () => {
+    if (!username || !roomId) return alert("Missing fields");
+    socket.emit("join-room", { roomId, username });
+  };
+
+  // ================= UI =================
+
+  if (!joined) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center text-white">
+        <div className="bg-white/5 backdrop-blur-xl p-8 rounded-2xl w-96 space-y-4 border border-white/10">
+          <h1 className="text-3xl font-bold text-center">🎬 BingeBuddy</h1>
+
+          <input
+            placeholder="Username"
+            className="w-full p-3 rounded bg-black/40 outline-none"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+
+          <input
+            placeholder="Room Code"
+            className="w-full p-3 rounded bg-black/40 outline-none"
+            value={roomId}
+            onChange={(e) => setRoomId(e.target.value)}
+          />
+
+          <button
+            onClick={joinRoom}
+            className="w-full bg-indigo-600 p-3 rounded font-semibold"
+          >
+            Join Room
+          </button>
+
+          <button
+            onClick={createRoom}
+            className="w-full bg-white/10 p-3 rounded font-semibold"
+          >
+            Create New Room
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ AFTER JOIN / CREATE
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center text-white">
-      <div className="w-[90%] max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
-        
-        <h1 className="text-4xl font-bold text-center mb-2">
-          🎬 BingeBuddy
-        </h1>
-
-        <p className="text-center text-gray-400 mb-6">
-          Watch YouTube together. Perfectly synced.
-        </p>
-
-        <input
-          type="text"
-          placeholder="Enter Room Code"
-          value={roomCode}
-          onChange={(e) => setRoomCode(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
-        />
-
-        <button className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 transition font-semibold mb-3">
-          Join Room
-        </button>
-
-        <button className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 transition font-semibold">
-          Create New Room
-        </button>
-
-        <p className="text-xs text-center text-gray-500 mt-6">
-          Created by Aditya Sajwan & Mohit chamoli
-        </p>
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-bold">Room: {roomId}</h2>
+        {isHost && <p className="text-indigo-400">👑 You are the Host</p>}
+        <p className="text-gray-400">Share this link:</p>
+        <code className="bg-white/10 px-3 py-1 rounded block">
+          {window.location.href}
+        </code>
       </div>
     </div>
   );
