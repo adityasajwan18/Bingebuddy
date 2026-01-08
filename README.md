@@ -16,6 +16,7 @@ Users can create or join rooms using a **room code or shareable link**, chat in 
   - Seek video
   - Change video
 - 💬 **Real-time Chat System**
+- ✍️ **Typing indicators in chat**
 - 👥 **Live User List**
 - ⏱️ **Auto-sync New Users**
 - 🌙 **Dark Mode UI**
