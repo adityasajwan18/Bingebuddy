@@ -63,12 +63,34 @@ io.on("connection", (socket) => {
     console.log(`${username} joined room ${roomId}`);
   });
 
+  // ✅ CHAT
+  socket.on("chat", ({ roomId, message, username }) => {
+    if (!rooms[roomId]) return;
+    io.to(roomId).emit("chat", { username, message });
+  });
+
+  // ✅ TYPING INDICATORS
+  // Emits when a user starts typing and stops typing. Clients use these to show typing UX.
+  socket.on("typing", ({ roomId, username }) => {
+    if (!rooms[roomId]) return;
+    socket.to(roomId).emit("user-typing", username);
+  });
+
+  socket.on("stop-typing", ({ roomId, username }) => {
+    if (!rooms[roomId]) return;
+    socket.to(roomId).emit("user-stop-typing", username);
+  });
+
   // ✅ DISCONNECT
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
 
     for (const roomId in rooms) {
       if (rooms[roomId].users[socket.id]) {
+        // notify others that this user stopped typing (cleanup)
+        const username = rooms[roomId].users[socket.id];
+        socket.to(roomId).emit("user-stop-typing", username);
+
         delete rooms[roomId].users[socket.id];
         io.to(roomId).emit("user-list", rooms[roomId].users);
       }
