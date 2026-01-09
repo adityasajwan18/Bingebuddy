@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { socket } from "./socket";
-
+import PaperBackground from "./components/ui/paper-background"
 // get room from URL safely
 function getRoomFromURL() {
   const params = new URLSearchParams(window.location.search);
@@ -49,11 +49,16 @@ export default function App() {
     socket.emit("join-room", { roomId, username });
   };
 
-  // ================= UI =================
+// ================= UI =================
 
-  if (!joined) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center text-white">
+if (!joined) {
+  return (
+    <div className="relative min-h-screen overflow-hidden text-white">
+      {/* Background */}
+      <PaperBackground effect="combined" speed={1} intensity={1.5} />
+
+      {/* Foreground UI */}
+      <div className="relative z-10 min-h-screen bg-gradient-to-br from-black/80 via-zinc-900/80 to-black/80 flex items-center justify-center">
         <div className="bg-white/5 backdrop-blur-xl p-8 rounded-2xl w-96 space-y-4 border border-white/10">
           <h1 className="text-3xl font-bold text-center">🎬 BingeBuddy</h1>
 
@@ -86,13 +91,20 @@ export default function App() {
           </button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  // ✅ AFTER JOIN / CREATE
-  return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="text-center space-y-2">
+// ================= AFTER JOIN =================
+
+return (
+  <div className="relative min-h-screen overflow-hidden text-white">
+    {/* Background */}
+    <PaperBackground effect="combined" speed={1} intensity={1.5} />
+
+    {/* Foreground UI */}
+    <div className="relative z-10 min-h-screen bg-black/70 flex items-center justify-center">
+      <div className="text-center space-y-2 bg-black/40 backdrop-blur-lg p-6 rounded-xl border border-white/10">
         <h2 className="text-2xl font-bold">Room: {roomId}</h2>
         {isHost && <p className="text-indigo-400">👑 You are the Host</p>}
         <p className="text-gray-400">Share this link:</p>
@@ -101,5 +113,7 @@ export default function App() {
         </code>
       </div>
     </div>
-  );
+  </div>
+);
+
 }

@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
-/* Optional global styling */
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+html, body, #root {
+  height: 100%;
+  background: black;
 }
