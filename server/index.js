@@ -1,103 +1,83 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
+const express = require("express")
+const http = require("http")
+const { Server } = require("socket.io")
+const cors = require("cors")
 
-const app = express();
-app.use(cors());
+const app = express()
+app.use(cors())
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" },
-});
+const server = http.createServer(app)
+const io = new Server(server, { cors: { origin: "*" } })
 
-const rooms = {};
+const rooms = {}
 
-// 🔹 helper to generate room codes
 function generateRoomCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+  return Math.random().toString(36).substring(2, 8).toUpperCase()
 }
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  console.log("User connected:", socket.id)
 
-  // ✅ CREATE ROOM
   socket.on("create-room", ({ username }) => {
-    const roomId = generateRoomCode();
+    const roomId = generateRoomCode()
 
     rooms[roomId] = {
       host: socket.id,
       users: { [socket.id]: username },
       videoState: { videoId: "", time: 0, playing: false },
-    };
+    }
 
-    socket.join(roomId);
+    socket.join(roomId)
 
     socket.emit("room-created", {
       roomId,
       isHost: true,
       users: rooms[roomId].users,
-    });
+    })
 
-    console.log(`Room created: ${roomId}`);
-  });
+    console.log("Room created:", roomId)
+  })
 
-  // ✅ JOIN ROOM
   socket.on("join-room", ({ roomId, username }) => {
     if (!rooms[roomId]) {
-      socket.emit("error-message", "Room does not exist");
-      return;
+      socket.emit("error-message", "Room not found")
+      return
     }
 
-    rooms[roomId].users[socket.id] = username;
-    socket.join(roomId);
+    rooms[roomId].users[socket.id] = username
+    socket.join(roomId)
 
-    socket.emit("room-joined", {
-      roomId,
-      isHost: false,
-      users: rooms[roomId].users,
-    });
+    socket.emit("room-joined", { isHost: false })
+    io.to(roomId).emit("user-list", rooms[roomId].users)
 
-    io.to(roomId).emit("user-list", rooms[roomId].users);
+    console.log(username, "joined", roomId)
+  })
 
-    console.log(`${username} joined room ${roomId}`);
-  });
+  // 🎥 VIDEO SET
+  socket.on("set-video", ({ roomId, videoId }) => {
+    if (!rooms[roomId]) return
 
-  // ✅ CHAT
-  socket.on("chat", ({ roomId, message, username }) => {
-    if (!rooms[roomId]) return;
-    io.to(roomId).emit("chat", { username, message });
-  });
+    rooms[roomId].videoState = {
+      videoId,
+      time: 0,
+      playing: false,
+    }
 
-  // ✅ TYPING INDICATORS
-  // Emits when a user starts typing and stops typing. Clients use these to show typing UX.
-  socket.on("typing", ({ roomId, username }) => {
-    if (!rooms[roomId]) return;
-    socket.to(roomId).emit("user-typing", username);
-  });
+    io.to(roomId).emit("video-changed", rooms[roomId].videoState)
 
-  socket.on("stop-typing", ({ roomId, username }) => {
-    if (!rooms[roomId]) return;
-    socket.to(roomId).emit("user-stop-typing", username);
-  });
+    console.log("Video set:", videoId, "in", roomId)
+  })
 
-  // ✅ DISCONNECT
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-
     for (const roomId in rooms) {
       if (rooms[roomId].users[socket.id]) {
-        // notify others that this user stopped typing (cleanup)
-        const username = rooms[roomId].users[socket.id];
-        socket.to(roomId).emit("user-stop-typing", username);
-
-        delete rooms[roomId].users[socket.id];
-        io.to(roomId).emit("user-list", rooms[roomId].users);
+        delete rooms[roomId].users[socket.id]
+        io.to(roomId).emit("user-list", rooms[roomId].users)
       }
     }
-  });
-});
+  })
+})
 
 server.listen(3000, () => {
-  console.log("✅ Server running on http://localhost:3000");
-});
+  console.log("✅ Server running on http://localhost:3000")
+})
