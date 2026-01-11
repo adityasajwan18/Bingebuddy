@@ -54,6 +54,9 @@ Socket.IO Server
 ├── Video State Sync
 └── Real-time Events
 
+yaml
+Copy code
+
 ---
 
 ## 📁 Project Structure
