@@ -69,6 +69,7 @@ export default function App() {
               onChange={(e) => setUsername(e.target.value)}
             />
 
+            
             <input
               placeholder="Room Code"
               className="w-full p-3 rounded bg-black/40 outline-none"
