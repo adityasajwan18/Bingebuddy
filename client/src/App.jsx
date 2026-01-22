@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react"
 import { socket } from "./socket"
 import PaperBackground from "./components/ui/paper-background"
+import YouTube from "react-youtube";
+
+
 
 // Get room from URL
 function getRoomFromURL() {
@@ -13,6 +16,8 @@ export default function App() {
   const [roomId, setRoomId] = useState(getRoomFromURL)
   const [joined, setJoined] = useState(false)
   const [isHost, setIsHost] = useState(false)
+  const [videoId, setVideoId] = useState(null);
+
 
   // Socket listeners
   useEffect(() => {
@@ -28,9 +33,11 @@ export default function App() {
       setJoined(true)
     })
 
-    socket.on("video-changed", (videoState) => {
-      console.log("Load this video for everyone:", videoState.videoId)
-    })
+   socket.on("video-changed", (videoState) => {
+  console.log("Video received:", videoState.videoId);
+  setVideoId(videoState.videoId);
+});
+
 
     socket.on("error-message", (msg) => alert(msg))
 
@@ -127,6 +134,22 @@ export default function App() {
               }}
             />
           )}
+          {
+        videoId && (
+            <div className="mt-6">
+             <YouTube
+             videoId={videoId}
+           opts={{
+             width: "100%",
+              height: "360",
+              playerVars: {
+                    autoplay: 1,
+              },
+                }}
+    />
+  </div>
+)}
+
         </div>
       </div>
     </div>
