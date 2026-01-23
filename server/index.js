@@ -67,7 +67,7 @@ io.on("connection", (socket) => {
 
     console.log("Video set:", videoId, "in", roomId)
   })
-  
+
   socket.on("video-play", ({ roomId }) => {
   if (!rooms[roomId]) return;
   io.to(roomId).emit("video-play");
@@ -77,6 +77,12 @@ socket.on("video-pause", ({ roomId }) => {
   if (!rooms[roomId]) return;
   io.to(roomId).emit("video-pause");
 });
+
+socket.on("video-seek", ({ roomId, time }) => {
+  if (!rooms[roomId]) return;
+  io.to(roomId).emit("video-seek", { time });
+});
+
 
   socket.on("disconnect", () => {
     for (const roomId in rooms) {

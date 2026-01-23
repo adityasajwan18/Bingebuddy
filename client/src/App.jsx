@@ -52,6 +52,13 @@ socket.on("video-pause", () => {
   setVideoId(videoState.videoId);
 });
 
+socket.on("video-seek", ({ time }) => {
+  if (!isHost && playerRef.current) {
+    playerRef.current.seekTo(time, true);
+  }
+});
+
+
 
     socket.on("error-message", (msg) => alert(msg))
 
@@ -155,14 +162,13 @@ socket.on("video-pause", () => {
     <YouTube
   videoId={videoId}
   onReady={(e) => (playerRef.current = e.target)}
-  onPlay={() => {
-    if (isHost) {
-      socket.emit("video-play", { roomId });
-    }
-  }}
-  onPause={() => {
-    if (isHost) {
-      socket.emit("video-pause", { roomId });
+  onPlay={() => isHost && socket.emit("video-play", { roomId })}
+  onPause={() => isHost && socket.emit("video-pause", { roomId })}
+  onStateChange={(e) => {
+    // 1 = playing
+    if (isHost && e.data === 1) {
+      const time = e.target.getCurrentTime();
+      socket.emit("video-seek", { roomId, time });
     }
   }}
   opts={{
