@@ -136,6 +136,22 @@ export default function App() {
           <code className="block text-center bg-white/10 p-2 rounded text-sm">
             {window.location.href}
           </code>
+{videoId && (
+  <div className="mt-6 w-full max-w-3xl mx-auto">
+    <YouTube
+      videoId={videoId}
+      opts={{
+        width: "100%",
+        height: "390",
+        playerVars: {
+          autoplay: 1,
+          rel: 0,
+        },
+      }}
+      className="rounded-lg overflow-hidden"
+    />
+  </div>
+)}
 
           {isHost && (
   <form onSubmit={handleSetVideo} className="space-y-2">
@@ -149,22 +165,6 @@ export default function App() {
       Press Enter to load video for everyone
     </p>
   </form>
-)}
-
-          {
-        videoId && (
-            <div className="mt-6">
-             <YouTube
-             videoId={videoId}
-           opts={{
-             width: "100%",
-              height: "360",
-              playerVars: {
-                    autoplay: 1,
-              },
-                }}
-    />
-  </div>
 )}
 
         </div>
