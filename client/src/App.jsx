@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react"
 import { socket } from "./socket"
 import PaperBackground from "./components/ui/paper-background"
+import YouTube from "react-youtube";
+
+
 
 // Get room from URL
 function getRoomFromURL() {
@@ -13,6 +16,8 @@ export default function App() {
   const [roomId, setRoomId] = useState(getRoomFromURL)
   const [joined, setJoined] = useState(false)
   const [isHost, setIsHost] = useState(false)
+  const [videoId, setVideoId] = useState(null);
+
 
   // Socket listeners
   useEffect(() => {
@@ -28,9 +33,11 @@ export default function App() {
       setJoined(true)
     })
 
-    socket.on("video-changed", (videoState) => {
-      console.log("Load this video for everyone:", videoState.videoId)
-    })
+   socket.on("video-changed", (videoState) => {
+  console.log("Video received:", videoState.videoId);
+  setVideoId(videoState.videoId);
+});
+
 
     socket.on("error-message", (msg) => alert(msg))
 
@@ -95,6 +102,25 @@ export default function App() {
       </div>
     )
   }
+  const handleSetVideo = (e) => {
+  e.preventDefault(); // 🔴 VERY IMPORTANT
+
+  const url = e.target.video.value.trim();
+  if (!url) return;
+
+  const id =
+    url.includes("youtu.be")
+      ? url.split("youtu.be/")[1]?.split("?")[0]
+      : url.split("v=")[1]?.split("&")[0];
+
+  if (!id) {
+    alert("Invalid YouTube link");
+    return;
+  }
+
+  socket.emit("set-video", { roomId, videoId: id });
+  e.target.reset();
+};
 
   // ================= ROOM =================
   return (
@@ -112,21 +138,35 @@ export default function App() {
           </code>
 
           {isHost && (
-            <input
-              placeholder="Paste YouTube link and press Enter"
-              className="w-full p-3 rounded bg-black/40 outline-none"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  const url = e.target.value
-                  const id = url.split("v=")[1]?.split("&")[0]
-                  if (id) {
-                    socket.emit("set-video", { roomId, videoId: id })
-                    e.target.value = ""
-                  }
-                }
-              }}
-            />
-          )}
+  <form onSubmit={handleSetVideo} className="space-y-2">
+    <input
+      name="video"
+      placeholder="Paste YouTube link and press Enter"
+      className="w-full p-3 rounded bg-black/40 outline-none"
+      autoFocus
+    />
+    <p className="text-xs text-gray-400">
+      Press Enter to load video for everyone
+    </p>
+  </form>
+)}
+
+          {
+        videoId && (
+            <div className="mt-6">
+             <YouTube
+             videoId={videoId}
+           opts={{
+             width: "100%",
+              height: "360",
+              playerVars: {
+                    autoplay: 1,
+              },
+                }}
+    />
+  </div>
+)}
+
         </div>
       </div>
     </div>
