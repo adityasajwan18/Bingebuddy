@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { socket } from "./socket"
 import PaperBackground from "./components/ui/paper-background"
 import YouTube from "react-youtube";
+import { useRef } from "react";
 
 
 
@@ -17,6 +18,7 @@ export default function App() {
   const [joined, setJoined] = useState(false)
   const [isHost, setIsHost] = useState(false)
   const [videoId, setVideoId] = useState(null);
+  const playerRef = useRef(null);
 
 
   // Socket listeners
@@ -32,6 +34,18 @@ export default function App() {
       setIsHost(isHost)
       setJoined(true)
     })
+    socket.on("video-play", () => {
+  if (!isHost && playerRef.current) {
+    playerRef.current.playVideo();
+  }
+});
+
+socket.on("video-pause", () => {
+  if (!isHost && playerRef.current) {
+    playerRef.current.pauseVideo();
+  }
+});
+
 
    socket.on("video-changed", (videoState) => {
   console.log("Video received:", videoState.videoId);
@@ -136,6 +150,30 @@ export default function App() {
           <code className="block text-center bg-white/10 p-2 rounded text-sm">
             {window.location.href}
           </code>
+{videoId && (
+  <div className="mt-6 w-full max-w-3xl mx-auto">
+    <YouTube
+  videoId={videoId}
+  onReady={(e) => (playerRef.current = e.target)}
+  onPlay={() => {
+    if (isHost) {
+      socket.emit("video-play", { roomId });
+    }
+  }}
+  onPause={() => {
+    if (isHost) {
+      socket.emit("video-pause", { roomId });
+    }
+  }}
+  opts={{
+    width: "100%",
+    height: "390",
+    playerVars: { autoplay: 1 },
+  }}
+/>
+
+  </div>
+)}
 
           {isHost && (
   <form onSubmit={handleSetVideo} className="space-y-2">
@@ -149,22 +187,6 @@ export default function App() {
       Press Enter to load video for everyone
     </p>
   </form>
-)}
-
-          {
-        videoId && (
-            <div className="mt-6">
-             <YouTube
-             videoId={videoId}
-           opts={{
-             width: "100%",
-              height: "360",
-              playerVars: {
-                    autoplay: 1,
-              },
-                }}
-    />
-  </div>
 )}
 
         </div>
