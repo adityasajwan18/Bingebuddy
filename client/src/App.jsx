@@ -6,7 +6,7 @@ import { useRef } from "react";
 
 
 
-// Get room from the URL
+// Get room from  URL
 function getRoomFromURL() {
   const params = new URLSearchParams(window.location.search)
   return params.get("room") || ""
