@@ -19,6 +19,8 @@ export default function App() {
   const [isHost, setIsHost] = useState(false)
   const [videoId, setVideoId] = useState(null);
   const playerRef = useRef(null);
+  const lastTimeRef = useRef(0);
+
 
 
   // Socket listeners
@@ -158,28 +160,47 @@ socket.on("video-seek", ({ time }) => {
             {window.location.href}
           </code>
 {videoId && (
-  <div className="mt-6 w-full max-w-3xl mx-auto">
+  <div className={isHost ? "" : "pointer-events-none opacity-90"}>
     <YouTube
-  videoId={videoId}
-  onReady={(e) => (playerRef.current = e.target)}
-  onPlay={() => isHost && socket.emit("video-play", { roomId })}
-  onPause={() => isHost && socket.emit("video-pause", { roomId })}
-  onStateChange={(e) => {
-    // 1 = playing
-    if (isHost && e.data === 1) {
-      const time = e.target.getCurrentTime();
-      socket.emit("video-seek", { roomId, time });
-    }
-  }}
-  opts={{
-    width: "100%",
-    height: "390",
-    playerVars: { autoplay: 1 },
-  }}
-/>
+      videoId={videoId}
+      onReady={(e) => {
+        playerRef.current = e.target;
+        lastTimeRef.current = e.target.getCurrentTime();
+      }}
 
+      onStateChange={(e) => {
+        if (!isHost || !playerRef.current) return;
+
+        const currentTime = playerRef.current.getCurrentTime();
+        const diff = Math.abs(currentTime - lastTimeRef.current);
+
+        // 🔥 Detect SEEK (jump more than 1.5s)
+        if (diff > 1.5) {
+          socket.emit("video-seek", { roomId, time: currentTime });
+        }
+
+        lastTimeRef.current = currentTime;
+      }}
+
+      onPlay={() => isHost && socket.emit("video-play", { roomId })}
+      onPause={() => isHost && socket.emit("video-pause", { roomId })}
+
+      opts={{
+        width: "100%",
+        height: "390",
+        playerVars: { autoplay: 1 },
+      }}
+    />
   </div>
 )}
+
+  
+  {!isHost && (
+  <p className="text-xs text-gray-400 text-center mt-2">
+    Only host can control playback
+  </p>
+)}
+
 
           {isHost && (
   <form onSubmit={handleSetVideo} className="space-y-2">
