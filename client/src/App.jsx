@@ -168,13 +168,13 @@ socket.on("video-seek", ({ time }) => {
         lastTimeRef.current = e.target.getCurrentTime();
       }}
 
-      onStateChange={(e) => {
+      onStateChange={() => {
         if (!isHost || !playerRef.current) return;
 
         const currentTime = playerRef.current.getCurrentTime();
         const diff = Math.abs(currentTime - lastTimeRef.current);
 
-        // 🔥 Detect SEEK (jump more than 1.5s)
+        // 🔥 Detect SEEK (jump more than  1.5s) 
         if (diff > 1.5) {
           socket.emit("video-seek", { roomId, time: currentTime });
         }
