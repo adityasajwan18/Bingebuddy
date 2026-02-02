@@ -95,5 +95,5 @@ socket.on("video-seek", ({ roomId, time }) => {
 })
 
 server.listen(3000, () => {
-  console.log("✅ Server running on the http://localhost:3000")
+  console.log("✅ Server running on http://localhost:3000")
 })
