@@ -12,6 +12,7 @@ function getRoomFromURL() {
   return params.get("room") || ""
 }
 
+
 export default function App() {
   const [username, setUsername] = useState("")
   const [roomId, setRoomId] = useState(getRoomFromURL)
