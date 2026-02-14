@@ -35,7 +35,7 @@ io.on("connection", (socket) => {
       users: rooms[roomId].users,
     })
 
-    console.log("Room created:", roomId)
+       console.log("Room created:", roomId)
   })
 
   socket.on("join-room", ({ roomId, username }) => {
