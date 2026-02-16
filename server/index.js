@@ -53,7 +53,7 @@ io.on("connection", (socket) => {
     console.log(username, "joined", roomId)
   })
 
-  // 🎥 VIDEO SET
+  // 🎥 set the video 
   socket.on("set-video", ({ roomId, videoId }) => {
     if (!rooms[roomId]) return
 
