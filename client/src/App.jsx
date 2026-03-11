@@ -4,14 +4,11 @@ import PaperBackground from "./components/ui/paper-background"
 import YouTube from "react-youtube";
 import { useRef } from "react";
 
-
-
 // Get room from  the URL
 function getRoomFromURL() {
   const params = new URLSearchParams(window.location.search)
   return params.get("room") || ""
 }
-
 
 export default function App() {
   const [username, setUsername] = useState("")
@@ -21,8 +18,6 @@ export default function App() {
   const [videoId, setVideoId] = useState(null);
   const playerRef = useRef(null);
   const lastTimeRef = useRef(0);
-
-
 
   // Socket listeners
   useEffect(() => {
