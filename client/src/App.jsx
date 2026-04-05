@@ -19,7 +19,7 @@ export default function App() {
   const playerRef = useRef(null);
   const lastTimeRef = useRef(0);
 
-  // Socket listeners
+  // Socket listeners js
   useEffect(() => {
     socket.on("room-created", ({ roomId, isHost }) => {
       setRoomId(roomId)
