@@ -5,7 +5,7 @@ export default function Player({ roomId }) {
   const playerRef = useRef(null);
   const isHostRef = useRef(false);
 
-  // Host sends updates
+  // Host sends the  updates
   const onPlayerStateChange = (event) => {
     if (!isHostRef.current || !playerRef.current) return;
 
