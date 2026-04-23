@@ -37,7 +37,7 @@ io.on("connection", (socket) => {
 
        console.log("Room created:", roomId)
   })
-// join room
+// join room module
   socket.on("join-room", ({ roomId, username }) => {
     if (!rooms[roomId]) {
       socket.emit("error-message", "Room not found")
