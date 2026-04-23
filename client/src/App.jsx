@@ -122,7 +122,7 @@ socket.on("video-seek", ({ time }) => {
     )
   }
   const handleSetVideo = (e) => {
-  e.preventDefault(); // 🔴 VERY IMPORTANT
+  e.preventDefault(); 
 
   const url = e.target.video.value.trim();
   if (!url) return;
