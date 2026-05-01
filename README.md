@@ -131,10 +131,7 @@ Play/Pause state
 🌙 Dark Mode
 BingeBuddy supports dark mode using Tailwind CSS.
 
-js
-```
-document.documentElement.classList.toggle("dark");
-```
+
 🔐 Host Permissions
 Only the host can:
 
